@@ -57,13 +57,13 @@ void movJointsVet(int sock, char* buffer, float pos[], int state) {
 }
 
 // Função de descobrir o próximo movimento
-int *proxMovimento(int tabuleiro[][]) {
-
+int *proxMovimento(char tabuleiro[][], char simbComp) {
+    
 }
 
 int main(int argc, char *argv[]) {
     
-    //variaveis para conexcao com o robo NAO MEXER
+    //variaveis para conexao com o robo NAO MEXER
     int sock = 0;
     char buffer[2048] = {0};
     
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     char casas[3][3];
     for(int i=0; i<3; i++) {
         for(int j=0; j<3;j++)
-            casas[i][j] = 'n';
+            casas[i][j] = 'n'; // Inicia todas as casas com 'n'
     }
     float angulospos[3][3][6] = {
         {
