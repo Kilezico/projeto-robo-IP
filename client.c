@@ -89,7 +89,7 @@ int vitoria(const int board[3][3])
     // Determina se um jogador venceu, retorna 0 caso contrário.
     unsigned vitorias[8][3] = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, {0, 4, 8}, {2, 4, 6}};
     int i;
-    for (i = 0; i < 8; ++i)
+    for (i = 0; i < 8; i++)
     {
         int a = vitorias[i][0], b = vitorias[i][1], c = vitorias[i][2];
         if (board[a / 3][a % 3] != 0 &&
@@ -133,7 +133,7 @@ int minimax(int board[3][3], int jogador) // para a maquina vai ser jogador=1 e 
             }
         }
     }
-    if (move_i = -1)
+    if (move_i == -1)
         return 0;
     return melhorpontuacao;
 }
@@ -154,7 +154,7 @@ int movrobo(int board[3][3], int *roboi, int *roboj)
                 board[i][j] = 0;
                 if (pontuacao > maxpont)
                 {
-                    pontuacao = pontuacao;
+                    maxpont = pontuacao;
                     move_i = i;
                     move_j = j;
                 }
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 
     printf("Deseja jogar primeiro? (1)Sim (2)Não");
     scanf("%d", &jogador);
-    for (int round = 0; round < 9 && vitoria(casas); round++)
+    for (int round = 0; round < 9 && vitoria(casas) == 0; round++)
     {
         if ((rodada + jogador) % 2 == 0)
         {
