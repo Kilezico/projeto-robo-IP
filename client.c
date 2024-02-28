@@ -56,10 +56,17 @@ void movJoints(int sock, char *buffer, float j1, float j2, float j3, float j4, f
 }
 
 // Nossas funções
-// Função de mover juntas, mas que recebe um vetor, em vez de 6 inteiros
-void movJointsVet(int sock, char *buffer, float pos[], int state)
-{
-    movJoints(sock, buffer, pos[0], pos[1], pos[2], pos[3], pos[4], pos[5], state);
+// Movimentos de juntas para jogar uma peça
+void colocaPeca(int sock, char *buffer, float posJogada[6], float pecaOpen[6], float pecaClose[6], float posIni[6]) {
+    movJoints(sock, buffer, pecaOpen[0], pecaOpen[1], pecaOpen[2], pecaOpen[3], pecaOpen[4], pecaOpen[5], OPEN);
+    delay(500);
+    movJoints(sock, buffer, pecaClose[0], pecaClose[1], pecaClose[2], pecaClose[3], pecaClose[4], pecaClose[5], CLOSE);
+    delay(500);
+    movJoints(sock, buffer, pecaOpen[0], pecaOpen[1], pecaOpen[2], pecaOpen[3], pecaOpen[4], pecaOpen[5], CLOSE);
+    delay(1000);
+    movJoints(sock, buffer, posJogada[0], posJogada[1], posJogada[2], posJogada[3], posJogada[4], posJogada[5], OPEN);
+    delay(200);
+    movJoints(sock, buffer, posIni[0], posIni[1], posIni[2], posIni[3], posIni[4], posIni[5], OPEN);
 }
 
 char conversor(int i) // Para printar no terminal.
@@ -137,6 +144,7 @@ int minimax(int board[3][3], int jogador) // para a maquina vai ser jogador=1 e 
         return 0;
     return melhorpontuacao;
 }
+
 int movrobo(int board[3][3], int *roboi, int *roboj)
 { // A função movrobo é responsável por determinar qual será a próxima jogada do computador, colocando cada casa vazia como algo e chamando o minmax para poder simular o valor do tabuleiro
     // fazendo assim a melhor escolha para o robo
@@ -181,11 +189,11 @@ int main(int argc, char *argv[])
     // Programe aqui ----------------------------------------------------
     
     int jogador;
-    int rodada = 0, jogadap_i, jogadap_j, jogadac_i, jogadac_j;
+    int jogadap_i, jogadap_j, jogadac_i, jogadac_j;
 
     int casas[3][3] = {0}; // Inicia todas as casas com 0 
 
-    float angulospos[3][3][6] = {
+    float anguloCasas[3][3][6] = {
         {{-0.27, -0.46, -0.67, -0.16, -0.37, -0.15},
          {-0.05, -0.45, -0.72, 0.05, -0.41, -0.07},
          {0.21, -0.46, -0.66, 0.19, -0.46, 0.1}},
@@ -196,43 +204,35 @@ int main(int argc, char *argv[])
          {-0.02, -0.81, -0.02, -0.11, -0.74, 0.11},
          {0.11, -0.77, -0.06, 0.07, -0.66, 0.07}}};
 
-    float anguloPecaClose[6] = {-1.58, -0.47, -0.75, 0.02, 0.08, -0.01};
     float anguloPecaOpen[6] = {-1.59, -0.37, -0.72, 0.00, -0.10, 0.01};
+    float anguloPecaClose[6] = {-1.58, -0.47, -0.75, 0.02, 0.08, -0.01};
+    float anguloPosInicial[6] = {0}; // Posição que o robô vai ficar enquanto espera a jogada do adversário.
 
-    printf("Deseja jogar primeiro? (1)Sim (2)Não");
+    printf("Deseja jogar primeiro? (1)Sim (2)Não: ");
     scanf("%d", &jogador);
     for (int round = 0; round < 9 && vitoria(casas) == 0; round++)
     {
-        if ((rodada + jogador) % 2 == 0)
+        if ((round + jogador) % 2 == 0)
         {
             // Pega jogada do robo
             movrobo(casas, &jogadac_i, &jogadac_j);
             // Move
-            movJointsVet(sock, buffer, anguloPecaOpen, OPEN);
-            delay(500);
-            movJointsVet(sock, buffer, anguloPecaClose, CLOSE);
-            delay(500);
-            movJointsVet(sock, buffer, anguloPecaOpen, CLOSE);
-            delay(1000);
-            movJointsVet(sock, buffer, angulospos[jogadac_i][jogadac_j], OPEN);
-            delay(200);
+            colocaPeca(sock, buffer, anguloCasas[jogadac_i][jogadac_j], anguloPecaOpen, anguloPecaClose, anguloPosInicial);
         }
         else
         {
             // Pega jogada do jogador
-            printf("Digite sua jogada na forma(x,y)");
+            printf("Digite sua jogada na forma(x,y): ");
             scanf("(%d,%d)", &jogadap_i, &jogadap_j);
             // Move  
-            movJointsVet(sock, buffer, anguloPecaOpen, OPEN);
-            delay(500);
-            movJointsVet(sock, buffer, anguloPecaClose, CLOSE);
-            delay(500);
-            movJointsVet(sock, buffer, anguloPecaOpen, CLOSE);
-            delay(1000);
-            movJointsVet(sock, buffer, angulospos[jogadap_i][jogadap_j], OPEN);
-            delay(200);
+            colocaPeca(sock, buffer, anguloCasas[jogadap_i][jogadap_j], anguloPecaOpen, anguloPecaClose, anguloPosInicial);
         }
     }
+
+    // Printa o resultado final.
+    if (vitoria(casas) == 1) printf("O ROBO venceu esse embate!\n");
+    else if (vitoria(casas) == -1) printf("Os seres humanos ganharam essa...\n");
+    else printf("Eita! Deu velha!\n");
 
     //-----------------------------------------------------------------
     // Encerra a conexao NAO MEXER

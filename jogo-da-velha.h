@@ -1,5 +1,5 @@
-#ifndef JOGO-DA-VELHA_H
-#define JOGO-DA-VELHA_H
+#ifndef JOGO_DA_VELHA_H
+#define JOGO_DA_VELHA_H
 
 void velha();
 char gridChar(int i);
