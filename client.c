@@ -59,13 +59,13 @@ void movJoints(int sock, char *buffer, float j1, float j2, float j3, float j4, f
 // Movimentos de juntas para jogar uma peça
 void colocaPeca(int sock, char *buffer, float posJogada[6], float pecaOpen[6], float pecaClose[6], float posIni[6]) {
     movJoints(sock, buffer, pecaOpen[0], pecaOpen[1], pecaOpen[2], pecaOpen[3], pecaOpen[4], pecaOpen[5], OPEN);
-    delay(500);
+    delay(100);
     movJoints(sock, buffer, pecaClose[0], pecaClose[1], pecaClose[2], pecaClose[3], pecaClose[4], pecaClose[5], CLOSE);
-    delay(500);
+    delay(100);
     movJoints(sock, buffer, pecaOpen[0], pecaOpen[1], pecaOpen[2], pecaOpen[3], pecaOpen[4], pecaOpen[5], CLOSE);
-    delay(1000);
+    delay(100);
     movJoints(sock, buffer, posJogada[0], posJogada[1], posJogada[2], posJogada[3], posJogada[4], posJogada[5], OPEN);
-    delay(200);
+    delay(100);
     movJoints(sock, buffer, posIni[0], posIni[1], posIni[2], posIni[3], posIni[4], posIni[5], OPEN);
 }
 
@@ -94,7 +94,7 @@ void printando(int board[3][3])
 int vitoria(const int board[3][3])
 {
     // Determina se um jogador venceu, retorna 0 caso contrário.
-    unsigned vitorias[8][3] = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, {0, 4, 8}, {2, 4, 6}};
+    int vitorias[8][3] = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, {0, 4, 8}, {2, 4, 6}};
     int i;
     for (i = 0; i < 8; i++)
     {
@@ -127,9 +127,9 @@ int minimax(int board[3][3], int jogador) // para a maquina vai ser jogador=1 e 
                 board[i][j] = jogador;
                 pontuacao = -minimax(board, jogador * -1); // aqui começo a puxar a recursão do minmax
                                                          // EXPLICAÇÂO
-                                                         /*Colocamos o "-" antes do minmax para poder inverter o valor da pontuacao do jogador a frente, pois como faço jogador*-1 para poder trocar quem vai jogar no min e max
-                                                         se nao tivesse esse - o valor vinha positivo quando fosse para ser negativo, dessa forma fazendo com que o min e max perca eficiencia
-                                                         Com esse pequeno ajuste quando ele for jogar para prever possibilidades do player não ira cofundir com a maquina e será feliz!*/
+                                                         //Colocamos o "-" antes do minmax para poder inverter o valor da pontuacao do jogador a frente, pois como faço jogador-1 para poder trocar quem vai jogar no min e max
+                                                         // se nao tivesse esse - o valor vinha positivo quando fosse para ser negativo, dessa forma fazendo com que o min e max perca eficiencia
+                                                         // Com esse pequeno ajuste quando ele for jogar para prever possibilidades do player não ira cofundir com a maquina e será feliz!*/
                 if (melhorpontuacao < pontuacao)
                 {
                     melhorpontuacao = pontuacao;
@@ -194,40 +194,55 @@ int main(int argc, char *argv[])
     int casas[3][3] = {0}; // Inicia todas as casas com 0 
 
     float anguloCasas[3][3][6] = {
-        {{-0.27, -0.46, -0.67, -0.16, -0.37, -0.15},
-         {-0.05, -0.45, -0.72, 0.05, -0.41, -0.07},
-         {0.21, -0.46, -0.66, 0.19, -0.46, 0.1}},
         {{-0.23, -0.66, -0.34, -0.13, -0.56, -0.17},
          {-0.07, -0.64, -0.41, 0.11, -0.52, -0.17},
          {0.13, -0.69, -0.32, 0.18, -0.58, -0.04}},
+
         {{-0.16, -0.82, 0.01, -0.23, -0.74, 0.11},
          {-0.02, -0.81, -0.02, -0.11, -0.74, 0.11},
-         {0.11, -0.77, -0.06, 0.07, -0.66, 0.07}}};
+         {0.11, -0.77, -0.06, 0.07, -0.66, 0.07}},
+
+        {{-0.20, -1.08, 0.45, 0.02, -0.98, -0.21},
+        {-0.07, -0.99, 0.30, 0.11, -0.85, -0.10},
+        {0.07, -1.02, 0.35, 0.12, -0.86, 0.06}}};
+
 
     float anguloPecaOpen[6] = {-1.59, -0.37, -0.72, 0.00, -0.10, 0.01};
     float anguloPecaClose[6] = {-1.58, -0.47, -0.75, 0.02, 0.08, -0.01};
-    float anguloPosInicial[6] = {0}; // Posição que o robô vai ficar enquanto espera a jogada do adversário.
+    float anguloPosInicial[6] = {0.00,0.50,-1.25,0.00,0.00,-0.01};
+ // Posição que o robô vai ficar enquanto espera a jogada do adversário.
 
     printf("Deseja jogar primeiro? (1)Sim (2)Não: ");
     scanf("%d", &jogador);
     for (int round = 0; round < 9 && vitoria(casas) == 0; round++)
-    {
+    {  printf("%daaa", round+jogador);
         if ((round + jogador) % 2 == 0)
         {
             // Pega jogada do robo
             movrobo(casas, &jogadac_i, &jogadac_j);
             // Move
+            printf("Robo jogou %d %d\n", jogadac_i, jogadac_j );
+            printando(casas);
             colocaPeca(sock, buffer, anguloCasas[jogadac_i][jogadac_j], anguloPecaOpen, anguloPecaClose, anguloPosInicial);
         }
         else
         {
+            
             // Pega jogada do jogador
             printf("Digite sua jogada na forma(x,y): ");
-            scanf("(%d,%d)", &jogadap_i, &jogadap_j);
+            scanf(" (%d,%d)", &jogadap_i, &jogadap_j);
+            while(casas[jogadap_i][jogadap_j]!=0){
+            printf("Pos ocupada Digite sua jogada na forma(x,y): ");
+            scanf(" (%d,%d)", &jogadap_i, &jogadap_j);
+            }
+            casas[jogadap_i][jogadap_j]=-1;
+            printando(casas);
+            
             // Move  
-            colocaPeca(sock, buffer, anguloCasas[jogadap_i][jogadap_j], anguloPecaOpen, anguloPecaClose, anguloPosInicial);
+            colocaPeca(sock, buffer, anguloCasas[jogadap_i][jogadap_j], anguloPecaOpen, anguloPecaClose, anguloCasas[jogadap_i][jogadap_j]);
         }
     }
+    movJoints(sock, buffer, anguloPosInicial[0], anguloPosInicial[1], anguloPosInicial[2], anguloPosInicial[3], anguloPosInicial[4], anguloPosInicial[5], OPEN);
 
     // Printa o resultado final.
     if (vitoria(casas) == 1) printf("O ROBO venceu esse embate!\n");
